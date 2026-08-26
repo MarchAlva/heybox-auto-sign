@@ -31,3 +31,8 @@ jobs:
         env:
           heybox_ck: ${{ secrets.HEYBOX_CK }}
         run: node heybox_sign.js
+
+      - name: Run 0元抽奖盒券
+        env:
+          heybox_ck: ${{ secrets.HEYBOX_CK }}
+        run: node heybox_roll.js
