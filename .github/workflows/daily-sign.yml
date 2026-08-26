@@ -29,5 +29,5 @@ jobs:
 
       - name: Run 小黑盒签到
         env:
-          HEYBOX_CK: ${{ secrets.HEYBOX_CK }}
+          heybox_ck: ${{ secrets.HEYBOX_CK }}
         run: node heybox_sign.js
