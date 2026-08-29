@@ -31,7 +31,7 @@
 
 | 文件 / 目录           | 说明                          |
 | ------------------ | --------------------------- |
-| `.github/`         | GitHub Actions 自动化工作流            |
+| `.github/`         | GitHub Actions 工作流（`daily-sign.yml` 每日签到、`keepalive.yml` 保活） |
 | `GITHUB_ACTIONS.md` | GitHub Actions 使用说明            |
 | `dump_token.py`     | 导出 / 转储小黑盒 token 工具          |
 | `scan_token.py`     | 扫描小黑盒 token 工具               |
@@ -235,7 +235,12 @@ task heybox_roll.js
 
 ## GitHub Actions 使用
 
-本项目自带 GitHub Actions 工作流（`.github/workflows/daily-sign.yml`），可在 GitHub 云端**每天定时自动运行**，电脑无需开机。完整图文教程见 [GITHUB_ACTIONS.md](GITHUB_ACTIONS.md)。
+本项目自带两个 GitHub Actions 工作流（详见 `.github/workflows/`），可在 GitHub 云端自动运行，电脑无需开机：
+
+- `.github/workflows/daily-sign.yml`：**每日定时自动签到**，依次执行 `heybox_sign.js`（每日签到）与 `heybox_roll.js`（0 元抽奖盒券）；
+- `.github/workflows/keepalive.yml`：**每周保活**，向 `.keepalive` 写入时间戳并自动 push，用于刷新 GitHub 的「连续 60 天无活动」计时器，防止定时任务被自动停用。
+
+完整图文教程见 [GITHUB_ACTIONS.md](GITHUB_ACTIONS.md)。
 
 ### 配置方法
 
@@ -257,7 +262,7 @@ task heybox_roll.js
 > ⚠️ 自动化脚本存在账号与合规风险，请仅用于学习交流，并自行承担一切后果。
 
 - **Cookie 会过期**：App cookie 失效后工作流会报 `relogin` 并失败（红 ✗），需重新抓取手机 cookie 并更新 `HEYBOX_CK` Secret。
-- **定时可能被停用**：GitHub 对**连续 60 天无任何活动**的仓库会自动停用定时任务；长期不用的仓库手动 push 一次或重新 Enable 即可恢复。
+- **定时可能被停用（已自动规避）**：GitHub 对**连续 60 天无任何活动**的仓库会自动停用定时任务。本仓库已通过 `keepalive.yml` 工作流每周自动 push 一次来刷新计时器，可长期保活；若你 Fork 后删除了该工作流，则需手动 push 一次或重新 Enable 恢复。
 - **定时不精准**：GitHub cron 可能延迟数分钟，请勿依赖其精确到秒。
 - **仓库隐私**：强烈建议将仓库设为 **Private**，降低 cookie 逻辑与账号信息暴露风险（即便 cookie 存于加密 Secret，公开仓库风险仍更高）。
 - **免费额度**：公开仓库 Actions 免费；私有仓库有每月额度，单脚本每日运行完全足够。
@@ -377,7 +382,16 @@ heybox_ck
 ├── heybox_roll.js    # 0 元抽奖盒券
 ├── package.json
 ├── package-lock.json
-└── src/
-    ├── core/         # 通用运行框架、HTTP、工具函数
-    └── heybox/       # 小黑盒账号、接口、签名、上报等封装
+├── src/              # 通用运行框架、接口、签名、上报等封装（继承自上游）
+│   ├── core/         # 通用运行框架、HTTP、工具函数
+│   └── heybox/       # 小黑盒账号、接口、签名、上报等封装
+├── .github/
+│   └── workflows/
+│       ├── daily-sign.yml   # 每日定时自动签到 + 0 元抽奖盒券
+│       └── keepalive.yml    # 每周保活，防止定时任务被停用
+├── GITHUB_ACTIONS.md # GitHub Actions 使用图文说明
+├── dump_token.py     # 导出 / 转储小黑盒 token 工具
+├── scan_token.py     # 扫描小黑盒 token 工具
+├── run_sign.bat      # Windows 一键运行签到脚本
+└── .gitignore        # Git 忽略规则
 ```
