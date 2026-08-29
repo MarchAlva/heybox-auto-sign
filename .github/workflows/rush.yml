@@ -1,0 +1,34 @@
+name: 小黑盒定时抢券
+
+on:
+  schedule:
+    # UTC 时间：01:30 = 北京时间 09:30
+    # GitHub cron 可能延迟数分钟，且仓库 60 天无活动会自动停用定时任务
+    # 抢券建议按券的开抢时间修改此 cron，再启用本工作流
+    - cron: '30 1 * * *'
+  workflow_dispatch: {}   # 允许在 Actions 页面手动触发
+
+permissions:
+  contents: read
+
+jobs:
+  rush:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run 定时抢券
+        env:
+          heybox_ck: ${{ secrets.HEYBOX_CK }}
+        run: node heybox_rush.js

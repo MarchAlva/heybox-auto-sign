@@ -31,7 +31,7 @@
 
 | 文件 / 目录           | 说明                          |
 | ------------------ | --------------------------- |
-| `.github/`         | GitHub Actions 工作流（`sign.yml` 每日签到、`roll.yml` 0 元抽奖盒券、`keepalive.yml` 保活） |
+| `.github/`         | GitHub Actions 工作流（`sign.yml` 每日签到、`roll.yml` 0 元抽奖盒券、`claim.yml` 普通领券、`rush.yml` 定时抢券、`keepalive.yml` 保活；`claim.yml` / `rush.yml` 默认停用） |
 | `GITHUB_ACTIONS.md` | GitHub Actions 使用说明            |
 | `dump_token.py`     | 导出 / 转储小黑盒 token 工具          |
 | `scan_token.py`     | 扫描小黑盒 token 工具               |
@@ -235,13 +235,15 @@ task heybox_roll.js
 
 ## GitHub Actions 使用
 
-本项目自带三个 GitHub Actions 工作流（详见 `.github/workflows/`），可在 GitHub 云端自动运行，电脑无需开机：
+本项目自带五个 GitHub Actions 工作流（详见 `.github/workflows/`），可在 GitHub 云端自动运行，电脑无需开机：
 
 - `.github/workflows/sign.yml`：**每日定时自动签到**，执行 `heybox_sign.js`（每日签到与每日分享任务）；
 - `.github/workflows/roll.yml`：**每日定时 0 元抽奖盒券**，执行 `heybox_roll.js`（0 元抽奖盒券任务）；
+- `.github/workflows/claim.yml`：**每日定时普通领券**，执行 `heybox_claim.js`（普通游戏优惠券自动领取）；**默认停用**，需手动启用；
+- `.github/workflows/rush.yml`：**定时抢券**，执行 `heybox_rush.js`（限时券 / 抢券任务）；**默认停用**，需手动启用；
 - `.github/workflows/keepalive.yml`：**每周保活**，向 `.keepalive` 写入时间戳并自动 push，用于刷新 GitHub 的「连续 60 天无活动」计时器，防止定时任务被自动停用。
 
-> 签到与抽奖盒券已拆分为两个**独立工作流**：二者各有独立运行记录、可单独启用 / 停用，互不影响。
+> 签到、抽奖盒券、普通领券、抢券各自为**独立工作流**：各有独立运行记录、可单独启用 / 停用，互不影响。`sign.yml` 与 `roll.yml` 默认开启；`claim.yml` 与 `rush.yml` 默认停用（详见下方「停用 / 只保留某个工作流」）。
 
 完整图文教程见 [GITHUB_ACTIONS.md](GITHUB_ACTIONS.md)。
 
@@ -250,14 +252,14 @@ task heybox_roll.js
 1. 在仓库 **Settings → Secrets and variables → Actions → New repository secret** 添加一个密钥：
    - Name：`HEYBOX_CK`
    - Secret：小黑盒 App 的 cookie 一行，形如 `pkey=xxxx;x_xhh_tokenid=yyyy;`（即 `heybox_ck` 环境变量所需内容，单行、无换行）
-2. 工作流默认已开启，无需额外操作。触发方式有两种：
-   - **自动**：每天 UTC 01:30（北京时间 09:30）由 `schedule` 定时触发（`sign.yml` 与 `roll.yml` 同时触发，各跑各的）；
-   - **手动**：仓库 **Actions** 标签页 → `小黑盒每日签到` 或 `小黑盒0元抽奖盒券` → **Run workflow**。
-3. `sign.yml` 运行 `node heybox_sign.js`（每日签到）、`roll.yml` 运行 `node heybox_roll.js`（0 元抽奖盒券），均读取 `HEYBOX_CK` 密钥；`permissions` 均仅申请 `contents: read`（最小权限）。两个工作流独立执行、独立记录，可单独停用其中一个而不影响另一个。
+2. `sign.yml` 与 `roll.yml` 默认已开启，无需额外操作；`claim.yml` 与 `rush.yml` 默认停用，需先在 Actions 页 **Enable workflow** 才会运行。触发方式有两种：
+   - **自动**：每天 UTC 01:30（北京时间 09:30）由 `schedule` 定时触发（已启用者同时触发，各跑各的）；
+   - **手动**：仓库 **Actions** 标签页 → 对应工作流（如 `小黑盒每日签到`、`小黑盒0元抽奖盒券`）→ **Run workflow**。
+3. 四个任务工作流均读取 `HEYBOX_CK` 密钥，`permissions` 仅申请 `contents: read`（最小权限）：`sign.yml` 运行 `node heybox_sign.js`、`roll.yml` 运行 `node heybox_roll.js`、`claim.yml` 运行 `node heybox_claim.js`、`rush.yml` 运行 `node heybox_rush.js`。各工作流独立执行、独立记录，可单独启用 / 停用其中一个而不影响其他。
 
 ### 停用 / 只保留某个工作流
 
-**默认情况**：`sign.yml`（每日签到）与 `roll.yml`（0 元抽奖盒券）在推送后**都默认开启**，每天 UTC 01:30（北京时间 09:30）由 GitHub 同时触发，二者各跑各的、互不影响。
+**默认情况**：`sign.yml`（每日签到）与 `roll.yml`（0 元抽奖盒券）在推送后**默认开启**，每天 UTC 01:30（北京时间 09:30）由 GitHub 同时触发，二者各跑各的、互不影响；`claim.yml`（普通领券）与 `rush.yml`（定时抢券）**默认停用**，不会自动运行。
 
 如果想**只签到、不抽奖**（或反过来只抽奖、不签到），只需停用其中一个工作流即可：
 
@@ -269,6 +271,8 @@ task heybox_roll.js
 需要恢复时，在同一位置点击 **Enable workflow（启用工作流）** 即可。
 
 > ⚠️ **请勿停用 `keepalive.yml`**：它是每周保活工作流。停用后仓库连续 60 天无提交，GitHub 会自动停用全部定时任务（含签到 / 抽奖）。只停用 `sign.yml` 或 `roll.yml` 不影响保活。
+
+> 💡 `claim.yml` / `rush.yml` **默认停用**：如需启用，在 Actions 页对应工作流点 **··· → Enable workflow** 即可；`rush.yml` 为定时抢券，建议先按券的开抢时间修改其 `schedule` 后再启用（详见 `heybox_rush.js` 说明）。
 
 ### 验证与排查
 
@@ -405,8 +409,10 @@ heybox_ck
 │   └── heybox/       # 小黑盒账号、接口、签名、上报等封装
 ├── .github/
 │   └── workflows/
-│       ├── sign.yml        # 每日定时自动签到（heybox_sign.js）
-│       ├── roll.yml        # 每日定时 0 元抽奖盒券（heybox_roll.js）
+│       ├── sign.yml        # 每日定时自动签到（heybox_sign.js，默认开启）
+│       ├── roll.yml        # 每日定时 0 元抽奖盒券（heybox_roll.js，默认开启）
+│       ├── claim.yml       # 每日定时普通领券（heybox_claim.js，默认停用）
+│       ├── rush.yml        # 定时抢券（heybox_rush.js，默认停用）
 │       └── keepalive.yml    # 每周保活，防止定时任务被停用
 ├── GITHUB_ACTIONS.md # GitHub Actions 使用图文说明
 ├── dump_token.py     # 导出 / 转储小黑盒 token 工具
