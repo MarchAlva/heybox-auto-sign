@@ -233,6 +233,37 @@ task heybox_roll.js
 
 `heybox_rush.js` 属于定时抢券脚本，建议根据券的开抢时间单独配置定时任务，不建议只按固定每日任务运行。
 
+## GitHub Actions 使用
+
+本项目自带 GitHub Actions 工作流（`.github/workflows/daily-sign.yml`），可在 GitHub 云端**每天定时自动运行**，电脑无需开机。完整图文教程见 [GITHUB_ACTIONS.md](GITHUB_ACTIONS.md)。
+
+### 配置方法
+
+1. 在仓库 **Settings → Secrets and variables → Actions → New repository secret** 添加一个密钥：
+   - Name：`HEYBOX_CK`
+   - Secret：小黑盒 App 的 cookie 一行，形如 `pkey=xxxx;x_xhh_tokenid=yyyy;`（即 `heybox_ck` 环境变量所需内容，单行、无换行）
+2. 工作流默认已开启，无需额外操作。触发方式有两种：
+   - **自动**：每天 UTC 01:30（北京时间 09:30）由 `schedule` 定时触发；
+   - **手动**：仓库 **Actions** 标签页 → `小黑盒每日签到` → **Run workflow**。
+3. 工作流每次运行会依次执行 `node heybox_sign.js`（每日签到）与 `node heybox_roll.js`（0 元抽奖盒券），均读取 `HEYBOX_CK` 密钥；`permissions` 仅申请 `contents: read`（最小权限）。
+
+### 验证与排查
+
+- **Actions** 标签页查看运行结果：绿色 ✓ 表示成功（日志含 `签到: 已完成`、`完成: 1/1`）；红色 ✗ 表示失败。
+- 常见失败原因：Secret 填写错误、cookie 已过期、外部签名服务 `hkey` 不可用。
+
+### 风险提示
+
+> ⚠️ 自动化脚本存在账号与合规风险，请仅用于学习交流，并自行承担一切后果。
+
+- **Cookie 会过期**：App cookie 失效后工作流会报 `relogin` 并失败（红 ✗），需重新抓取手机 cookie 并更新 `HEYBOX_CK` Secret。
+- **定时可能被停用**：GitHub 对**连续 60 天无任何活动**的仓库会自动停用定时任务；长期不用的仓库手动 push 一次或重新 Enable 即可恢复。
+- **定时不精准**：GitHub cron 可能延迟数分钟，请勿依赖其精确到秒。
+- **仓库隐私**：强烈建议将仓库设为 **Private**，降低 cookie 逻辑与账号信息暴露风险（即便 cookie 存于加密 Secret，公开仓库风险仍更高）。
+- **免费额度**：公开仓库 Actions 免费；私有仓库有每月额度，单脚本每日运行完全足够。
+- **依赖外部服务**：签到依赖外部签名服务 `hkey.qcciii.com`，其不可用时签到会失败。
+- **平台合规**：小黑盒平台可能将自动化行为视为违规，存在账号被风控 / 封禁的可能，请谨慎使用。
+
 ## 输出说明
 
 每日任务输出示例：
