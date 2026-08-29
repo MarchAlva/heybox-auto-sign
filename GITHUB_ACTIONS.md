@@ -57,7 +57,7 @@ git remote add mine https://github.com/你的用户名/heybox.git
 git remote add mine https://github.com/你的用户名/heybox-auto-sign.git
 
 # 暂存并推送我们自己新增的文件（cookie.txt / sign_log.txt 已被 .gitignore 排除，不会上传）
-git add .github/workflows/sign.yml .github/workflows/roll.yml GITHUB_ACTIONS.md .gitignore dump_token.py run_sign.bat scan_token.py
+git add .github GITHUB_ACTIONS.md .gitignore dump_token.py run_sign.bat scan_token.py
 git commit -m "feat: add GitHub Actions auto-sign + token tools"
 git push mine main
 ```
@@ -67,11 +67,11 @@ git push mine main
 ## 五、开启并验证
 
 1. 仓库 → **Settings → Actions → General → Workflow permissions** 确认允许运行（默认即可）。
-2. 仓库 → **Actions** 标签页，应能看到 `小黑盒每日签到` 和 `小黑盒0元抽奖盒券` 两个工作流。
+2. 仓库 → **Actions** 标签页，应能看到五个工作流：`小黑盒每日签到`、`小黑盒0元抽奖盒券`（默认开启）、`小黑盒普通领券`、`小黑盒定时抢券`（默认停用，显示为灰色 / Disabled）、`Keepalive`（保活）。
 3. 点 **Run workflow** 手动跑一次验证：
    - 绿色 ✓ = 成功，日志里能看到 `签到: 已完成` 和 `完成: 1/1`。
    - 红色 ✗ = 检查 Secret 是否正确、cookie 是否过期。
-4. 之后每天 UTC 01:30（北京 09:30）自动跑。
+4. 之后每天 UTC 01:30（北京 09:30）自动跑（`sign.yml` 与 `roll.yml` 默认开启；`claim.yml` / `rush.yml` 默认停用，需手动 Enable 才运行）。
 
 ---
 
@@ -80,5 +80,5 @@ git push mine main
 - **定时精度**：GitHub cron 可能延迟几分钟；若仓库 **60 天无任何提交/活动**，定时任务会被自动停用——届时手动 push 一次或重新 enable 即可。
 - **私有仓库**：强烈建议 Private，避免 cookie 逻辑和账号暴露（即使 cookie 在 Secret 里，仓库公开也会增加风险）。
 - **免费额度**：公开仓库 Actions 免费；私有仓库有每月额度，单脚本每日跑一次完全够用。
-- **扩展**：想顺便自动领券，可参照 `sign.yml` 新建 `claim.yml` 工作流执行 `node heybox_claim.js`（同样依赖 `HEYBOX_CK`），与签到 / 抽奖盒券一样独立运行。
+- **扩展（领券 / 抢券）**：`claim.yml`（普通领券）与 `rush.yml`（定时抢券）工作流已内置，但**默认停用**。如需每日自动领券，在 Actions 页启用 `claim.yml` 即可；抢券建议先按券的开抢时间修改 `rush.yml` 的 `schedule` 后再启用。二者均读取 `HEYBOX_CK`，与签到 / 抽奖盒券一样独立运行、可单独开关。
 - **依赖外部签名服务** `hkey.qcciii.com`，若其不可用，签到会失败。
