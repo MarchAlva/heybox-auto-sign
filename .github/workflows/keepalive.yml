@@ -1,0 +1,28 @@
+name: Keepalive
+
+# 防止 GitHub 因「仓库连续 60 天无活动」而自动停用所有定时工作流。
+# 本工作流每周运行一次，向 .keepalive 写入当前时间并 push，
+# 产生的 commit 即为「活动」，持续刷新 60 天计时器，从而保活 daily-sign 等定时任务。
+on:
+  schedule:
+    - cron: '17 4 * * 1' # 每周一 04:17 UTC（北京时间 12:17）
+  workflow_dispatch: {} # 允许在 Actions 页面手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Touch keepalive file and push
+        run: |
+          git config user.name "WorkBuddy"
+          git config user.email "workbuddy@local"
+          date -u > .keepalive
+          git add .keepalive
+          git commit -m "chore: keepalive ($(date -u))" || echo "no changes"
+          git push
