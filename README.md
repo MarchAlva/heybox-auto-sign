@@ -4,6 +4,40 @@
 
 > 仅供学习交流使用。请自行承担使用风险，并遵守小黑盒平台规则。Cookie 属于敏感信息，请勿泄露给他人或提交到公开仓库。
 
+## 来源与文件说明
+
+> 本仓库派生自上游原仓库 [yowiv08/heybox](https://github.com/yowiv08/heybox)，并由 **WorkBuddy** 进行整理与修改。
+
+### 源文件（继承自上游原仓库）
+
+以下文件从原仓库 [yowiv08/heybox](https://github.com/yowiv08/heybox) 继承，内容与其保持一致（文件哈希一致，未做改动）。如上游更新，请以原仓库为准：
+
+| 源文件 / 目录      | 说明                              |
+| --------------- | ------------------------------- |
+| `README.md`     | 项目说明文档（本文）                     |
+| `heybox_sign.js`  | 每日签到与每日分享任务                     |
+| `heybox_claim.js` | 普通领券                            |
+| `heybox_rush.js`  | 定时抢券                            |
+| `heybox_roll.js`  | 0 元抽奖盒券                         |
+| `package.json`    | npm 脚本与依赖声明                     |
+| `package-lock.json` | 依赖锁文件                         |
+| `src/`          | 通用运行框架、接口、签名、上报等封装              |
+
+原仓库地址：<https://github.com/yowiv08/heybox>
+
+### 本仓库新增 / 修改的文件
+
+以下文件由本仓库（`MarchAlva/heybox-auto-sign`）新增，使用 **WorkBuddy** 辅助整理与编写：
+
+| 文件 / 目录           | 说明                          |
+| ------------------ | --------------------------- |
+| `.github/`         | GitHub Actions 自动化工作流            |
+| `GITHUB_ACTIONS.md` | GitHub Actions 使用说明            |
+| `dump_token.py`     | 导出 / 转储小黑盒 token 工具          |
+| `scan_token.py`     | 扫描小黑盒 token 工具               |
+| `run_sign.bat`      | Windows 一键运行签到脚本             |
+| `.gitignore`        | Git 忽略规则                    |
+
 ## 功能概览
 
 | 脚本                | 功能                                | npm script             |
