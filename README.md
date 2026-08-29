@@ -31,7 +31,7 @@
 
 | 文件 / 目录           | 说明                          |
 | ------------------ | --------------------------- |
-| `.github/`         | GitHub Actions 工作流（`daily-sign.yml` 每日签到、`keepalive.yml` 保活） |
+| `.github/`         | GitHub Actions 工作流（`sign.yml` 每日签到、`roll.yml` 0 元抽奖盒券、`keepalive.yml` 保活） |
 | `GITHUB_ACTIONS.md` | GitHub Actions 使用说明            |
 | `dump_token.py`     | 导出 / 转储小黑盒 token 工具          |
 | `scan_token.py`     | 扫描小黑盒 token 工具               |
@@ -235,10 +235,13 @@ task heybox_roll.js
 
 ## GitHub Actions 使用
 
-本项目自带两个 GitHub Actions 工作流（详见 `.github/workflows/`），可在 GitHub 云端自动运行，电脑无需开机：
+本项目自带三个 GitHub Actions 工作流（详见 `.github/workflows/`），可在 GitHub 云端自动运行，电脑无需开机：
 
-- `.github/workflows/daily-sign.yml`：**每日定时自动签到**，依次执行 `heybox_sign.js`（每日签到）与 `heybox_roll.js`（0 元抽奖盒券）；
+- `.github/workflows/sign.yml`：**每日定时自动签到**，执行 `heybox_sign.js`（每日签到与每日分享任务）；
+- `.github/workflows/roll.yml`：**每日定时 0 元抽奖盒券**，执行 `heybox_roll.js`（0 元抽奖盒券任务）；
 - `.github/workflows/keepalive.yml`：**每周保活**，向 `.keepalive` 写入时间戳并自动 push，用于刷新 GitHub 的「连续 60 天无活动」计时器，防止定时任务被自动停用。
+
+> 签到与抽奖盒券已拆分为两个**独立工作流**：二者各有独立运行记录、可单独启用 / 停用，互不影响。
 
 完整图文教程见 [GITHUB_ACTIONS.md](GITHUB_ACTIONS.md)。
 
@@ -248,9 +251,9 @@ task heybox_roll.js
    - Name：`HEYBOX_CK`
    - Secret：小黑盒 App 的 cookie 一行，形如 `pkey=xxxx;x_xhh_tokenid=yyyy;`（即 `heybox_ck` 环境变量所需内容，单行、无换行）
 2. 工作流默认已开启，无需额外操作。触发方式有两种：
-   - **自动**：每天 UTC 01:30（北京时间 09:30）由 `schedule` 定时触发；
-   - **手动**：仓库 **Actions** 标签页 → `小黑盒每日签到` → **Run workflow**。
-3. 工作流每次运行会依次执行 `node heybox_sign.js`（每日签到）与 `node heybox_roll.js`（0 元抽奖盒券），均读取 `HEYBOX_CK` 密钥；`permissions` 仅申请 `contents: read`（最小权限）。
+   - **自动**：每天 UTC 01:30（北京时间 09:30）由 `schedule` 定时触发（`sign.yml` 与 `roll.yml` 同时触发，各跑各的）；
+   - **手动**：仓库 **Actions** 标签页 → `小黑盒每日签到` 或 `小黑盒0元抽奖盒券` → **Run workflow**。
+3. `sign.yml` 运行 `node heybox_sign.js`（每日签到）、`roll.yml` 运行 `node heybox_roll.js`（0 元抽奖盒券），均读取 `HEYBOX_CK` 密钥；`permissions` 均仅申请 `contents: read`（最小权限）。两个工作流独立执行、独立记录，可单独停用其中一个而不影响另一个。
 
 ### 验证与排查
 
@@ -387,7 +390,8 @@ heybox_ck
 │   └── heybox/       # 小黑盒账号、接口、签名、上报等封装
 ├── .github/
 │   └── workflows/
-│       ├── daily-sign.yml   # 每日定时自动签到 + 0 元抽奖盒券
+│       ├── sign.yml        # 每日定时自动签到（heybox_sign.js）
+│       ├── roll.yml        # 每日定时 0 元抽奖盒券（heybox_roll.js）
 │       └── keepalive.yml    # 每周保活，防止定时任务被停用
 ├── GITHUB_ACTIONS.md # GitHub Actions 使用图文说明
 ├── dump_token.py     # 导出 / 转储小黑盒 token 工具
